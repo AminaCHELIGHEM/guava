@@ -46,9 +46,10 @@ public final class InetAddresses {
 
   private static Inet4Address getInet4Address(byte[] bytes) {
     checkArgument(
-        bytes.length == 4,
-        "Byte array has invalid length for an IPv4 address: %s != 4.",
-        bytes.length);
+        bytes.length == IPV4_PART_COUNT,
+        "Byte array has invalid length for an IPv4 address: %s != %s.",
+        bytes.length,
+        IPV4_PART_COUNT);
 
 
     return (Inet4Address) bytesToInetAddress(bytes, null);
