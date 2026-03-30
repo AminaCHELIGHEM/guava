@@ -470,14 +470,14 @@ public abstract class ImmutableList<E> extends ImmutableCollection<E>
    * after index validation has already been performed.
    */
   ImmutableList<E> subListUnchecked(int fromIndex, int toIndex) {
-    return new SubList(fromIndex, toIndex - fromIndex);
+    return new ImmutableListSubList(fromIndex, toIndex - fromIndex);
   }
 
-  private final class SubList extends ImmutableList<E> {
+  private final class ImmutableListSubList extends ImmutableList<E> {
     final transient int offset;
     final transient int length;
 
-    SubList(int offset, int length) {
+    ImmutableListSubList(int offset, int length) {
       this.offset = offset;
       this.length = length;
     }
