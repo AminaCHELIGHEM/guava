@@ -199,9 +199,9 @@ abstract class AbstractBiMap<K extends @Nullable Object, V extends @Nullable Obj
     Iterator<Entry<K, V>> itr = this.delegate.entrySet().iterator();
     while (itr.hasNext()) {
       Entry<K, V> entry = itr.next();
-      K k = entry.getKey();
-      V v = entry.getValue();
-      K conflict = inverse.delegate.putIfAbsent(v, k);
+      K key = entry.getKey();
+      V value = entry.getValue();
+      K conflict = inverse.delegate.putIfAbsent(value, key);
       if (conflict != null) {
         broken = entry;
         // We're definitely going to throw, but we'll try to keep the BiMap in an internally
