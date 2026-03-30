@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (C) 2007 The Guava Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -105,7 +105,7 @@ public abstract class ImmutableList<E> extends ImmutableCollection<E>
    * @throws NullPointerException if any element is null
    */
   public static <E> ImmutableList<E> of(E e1, E e2) {
-    return construct(e1, e2);
+    return constructFromElements(e1, e2);
   }
 
   /**
@@ -114,7 +114,7 @@ public abstract class ImmutableList<E> extends ImmutableCollection<E>
    * @throws NullPointerException if any element is null
    */
   public static <E> ImmutableList<E> of(E e1, E e2, E e3) {
-    return construct(e1, e2, e3);
+    return constructFromElements(e1, e2, e3);
   }
 
   /**
@@ -123,7 +123,7 @@ public abstract class ImmutableList<E> extends ImmutableCollection<E>
    * @throws NullPointerException if any element is null
    */
   public static <E> ImmutableList<E> of(E e1, E e2, E e3, E e4) {
-    return construct(e1, e2, e3, e4);
+    return constructFromElements(e1, e2, e3, e4);
   }
 
   /**
@@ -132,7 +132,7 @@ public abstract class ImmutableList<E> extends ImmutableCollection<E>
    * @throws NullPointerException if any element is null
    */
   public static <E> ImmutableList<E> of(E e1, E e2, E e3, E e4, E e5) {
-    return construct(e1, e2, e3, e4, e5);
+    return constructFromElements(e1, e2, e3, e4, e5);
   }
 
   /**
@@ -141,7 +141,7 @@ public abstract class ImmutableList<E> extends ImmutableCollection<E>
    * @throws NullPointerException if any element is null
    */
   public static <E> ImmutableList<E> of(E e1, E e2, E e3, E e4, E e5, E e6) {
-    return construct(e1, e2, e3, e4, e5, e6);
+    return constructFromElements(e1, e2, e3, e4, e5, e6);
   }
 
   /**
@@ -150,7 +150,7 @@ public abstract class ImmutableList<E> extends ImmutableCollection<E>
    * @throws NullPointerException if any element is null
    */
   public static <E> ImmutableList<E> of(E e1, E e2, E e3, E e4, E e5, E e6, E e7) {
-    return construct(e1, e2, e3, e4, e5, e6, e7);
+    return constructFromElements(e1, e2, e3, e4, e5, e6, e7);
   }
 
   /**
@@ -159,7 +159,7 @@ public abstract class ImmutableList<E> extends ImmutableCollection<E>
    * @throws NullPointerException if any element is null
    */
   public static <E> ImmutableList<E> of(E e1, E e2, E e3, E e4, E e5, E e6, E e7, E e8) {
-    return construct(e1, e2, e3, e4, e5, e6, e7, e8);
+    return constructFromElements(e1, e2, e3, e4, e5, e6, e7, e8);
   }
 
   /**
@@ -168,7 +168,7 @@ public abstract class ImmutableList<E> extends ImmutableCollection<E>
    * @throws NullPointerException if any element is null
    */
   public static <E> ImmutableList<E> of(E e1, E e2, E e3, E e4, E e5, E e6, E e7, E e8, E e9) {
-    return construct(e1, e2, e3, e4, e5, e6, e7, e8, e9);
+    return constructFromElements(e1, e2, e3, e4, e5, e6, e7, e8, e9);
   }
 
   /**
@@ -178,7 +178,7 @@ public abstract class ImmutableList<E> extends ImmutableCollection<E>
    */
   public static <E> ImmutableList<E> of(
       E e1, E e2, E e3, E e4, E e5, E e6, E e7, E e8, E e9, E e10) {
-    return construct(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10);
+    return constructFromElements(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10);
   }
 
   /**
@@ -188,7 +188,7 @@ public abstract class ImmutableList<E> extends ImmutableCollection<E>
    */
   public static <E> ImmutableList<E> of(
       E e1, E e2, E e3, E e4, E e5, E e6, E e7, E e8, E e9, E e10, E e11) {
-    return construct(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11);
+    return constructFromElements(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11);
   }
 
   // These go up to eleven. After that, you just get the varargs form, and
@@ -221,7 +221,7 @@ public abstract class ImmutableList<E> extends ImmutableCollection<E>
     array[10] = e11;
     array[11] = e12;
     System.arraycopy(others, 0, array, 12, others.length);
-    return construct(array);
+    return constructFromElements(array);
   }
 
   /**
@@ -261,7 +261,7 @@ public abstract class ImmutableList<E> extends ImmutableCollection<E>
       ImmutableList<E> list = ((ImmutableCollection<E>) elements).asList();
       return list.isPartialView() ? asImmutableList(list.toArray()) : list;
     }
-    return construct(elements.toArray());
+    return constructFromElements(elements.toArray());
   }
 
   /**
@@ -295,7 +295,7 @@ public abstract class ImmutableList<E> extends ImmutableCollection<E>
       case 1:
         return of(elements[0]);
       default:
-        return construct(elements.clone());
+        return constructFromElements(elements.clone());
     }
   }
 
@@ -348,7 +348,7 @@ public abstract class ImmutableList<E> extends ImmutableCollection<E>
   }
 
   /** Views the array as an immutable list. Checks for nulls; does not copy. */
-  private static <E> ImmutableList<E> construct(Object... elements) {
+  private static <E> ImmutableList<E> constructFromElements(Object... elements) {
     return asImmutableList(checkElementsNotNull(elements));
   }
 
@@ -949,3 +949,4 @@ public abstract class ImmutableList<E> extends ImmutableCollection<E>
 
   @GwtIncompatible @J2ktIncompatible   private static final long serialVersionUID = 0xcafebabe;
 }
+
