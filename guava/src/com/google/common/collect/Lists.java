@@ -68,6 +68,8 @@ import org.jspecify.annotations.Nullable;
  */
 @GwtCompatible
 public final class Lists {
+  private static final int HASH_LOAD_FACTOR_PERCENT = 10;
+
   private Lists() {}
 
   // ArrayList
@@ -157,7 +159,7 @@ public final class Lists {
     checkNonnegative(arraySize, "arraySize");
 
     // TODO(kevinb): Figure out the right behavior, and document it
-    return Ints.saturatedCast(5L + arraySize + (arraySize / 10));
+    return Ints.saturatedCast(5L + arraySize + (arraySize / HASH_LOAD_FACTOR_PERCENT));
   }
 
   /**
