@@ -65,16 +65,6 @@ import org.jspecify.annotations.Nullable;
  */
 @GwtCompatible
 public class Joiner {
-  /** Returns a joiner which automatically places {@code separator} between consecutive elements. */
-  public static Joiner on(String separator) {
-    return new Joiner(separator);
-  }
-
-  /** Returns a joiner which automatically places {@code separator} between consecutive elements. */
-  public static Joiner on(char separator) {
-    return new Joiner(String.valueOf(separator));
-  }
-
   private final String separator;
 
   private Joiner(String separator) {
@@ -83,6 +73,16 @@ public class Joiner {
 
   private Joiner(Joiner prototype) {
     this.separator = prototype.separator;
+  }
+
+  /** Returns a joiner which automatically places {@code separator} between consecutive elements. */
+  public static Joiner on(String separator) {
+    return new Joiner(separator);
+  }
+
+  /** Returns a joiner which automatically places {@code separator} between consecutive elements. */
+  public static Joiner on(char separator) {
+    return new Joiner(String.valueOf(separator));
   }
 
   /**
@@ -356,6 +356,71 @@ public class Joiner {
     return new MapJoiner(this, keyValueSeparator);
   }
 
+  // TODO(cpovirk): Rename to "toCharSequence."
+  CharSequence toString(@Nullable Object part) {
+    /*
+     * requireNonNull is not safe: Joiner.on(...).join(somethingThatContainsNull) will indeed throw.
+     * However, Joiner.on(...).useForNull(...).join(somethingThatContainsNull) *is* safe -- because
+     * it returns a subclass of Joiner that overrides this method to tolerate null inputs.
+     *
+     * Unfortunately, we don't distinguish between these two cases in our public API: Joiner.on(...)
+     * and Joiner.on(...).useForNull(...) both declare the same return type: plain Joiner. To ensure
+     * that users *can* pass null arguments to Joiner, we annotate it as if it always tolerates null
+     * inputs, rather than as if it never tolerates them.
+     *
+     * We rely on checkers to implement special cases to catch dangerous calls to join(), etc. based
+     * on what they know about the particular Joiner instances the calls are performed on.
+     *
+     * (In addition to useForNull, we also offer skipNulls. It, too, tolerates null inputs, but its
+     * tolerance is implemented differently: Its implementation avoids calling this toString(Object)
+     * method in the first place.)
+     */
+    requireNonNull(part);
+    return (part instanceof CharSequence) ? (CharSequence) part : part.toString();
+  }
+
+  private static Iterable<@Nullable Object> iterable(
+      @Nullable Object first, @Nullable Object second, @Nullable Object[] rest) {
+    checkNotNull(rest);
+    return new AbstractList<@Nullable Object>() {
+      @Override
+      public int size() {
+        return rest.length + 2;
+      }
+
+      @Override
+      public @Nullable Object get(int index) {
+        switch (index) {
+          case 0:
+            return first;
+          case 1:
+            return second;
+          default:
+            return rest[index - 2];
+        }
+      }
+    };
+  }
+
+  // cloned from ImmutableCollection
+  private static int expandedCapacity(int oldCapacity, int minCapacity) {
+    if (minCapacity < 0) {
+      throw new IllegalArgumentException("cannot store more than Integer.MAX_VALUE elements");
+    } else if (minCapacity <= oldCapacity) {
+      return oldCapacity;
+    }
+    // careful of overflow!
+    int newCapacity = oldCapacity + (oldCapacity >> 1) + 1;
+    if (newCapacity < minCapacity) {
+      newCapacity = Integer.highestOneBit(minCapacity - 1) << 1;
+    }
+    if (newCapacity < 0) {
+      newCapacity = Integer.MAX_VALUE;
+      // guaranteed to be >= newCapacity
+    }
+    return newCapacity;
+  }
+
   /**
    * An object that joins map entries in the same manner as {@code Joiner} joins iterables and
    * arrays. Like {@code Joiner}, it is thread-safe and immutable.
@@ -504,70 +569,5 @@ public class Joiner {
     public MapJoiner useForNull(String nullText) {
       return new MapJoiner(joiner.useForNull(nullText), keyValueSeparator);
     }
-  }
-
-  // TODO(cpovirk): Rename to "toCharSequence."
-  CharSequence toString(@Nullable Object part) {
-    /*
-     * requireNonNull is not safe: Joiner.on(...).join(somethingThatContainsNull) will indeed throw.
-     * However, Joiner.on(...).useForNull(...).join(somethingThatContainsNull) *is* safe -- because
-     * it returns a subclass of Joiner that overrides this method to tolerate null inputs.
-     *
-     * Unfortunately, we don't distinguish between these two cases in our public API: Joiner.on(...)
-     * and Joiner.on(...).useForNull(...) both declare the same return type: plain Joiner. To ensure
-     * that users *can* pass null arguments to Joiner, we annotate it as if it always tolerates null
-     * inputs, rather than as if it never tolerates them.
-     *
-     * We rely on checkers to implement special cases to catch dangerous calls to join(), etc. based
-     * on what they know about the particular Joiner instances the calls are performed on.
-     *
-     * (In addition to useForNull, we also offer skipNulls. It, too, tolerates null inputs, but its
-     * tolerance is implemented differently: Its implementation avoids calling this toString(Object)
-     * method in the first place.)
-     */
-    requireNonNull(part);
-    return (part instanceof CharSequence) ? (CharSequence) part : part.toString();
-  }
-
-  private static Iterable<@Nullable Object> iterable(
-      @Nullable Object first, @Nullable Object second, @Nullable Object[] rest) {
-    checkNotNull(rest);
-    return new AbstractList<@Nullable Object>() {
-      @Override
-      public int size() {
-        return rest.length + 2;
-      }
-
-      @Override
-      public @Nullable Object get(int index) {
-        switch (index) {
-          case 0:
-            return first;
-          case 1:
-            return second;
-          default:
-            return rest[index - 2];
-        }
-      }
-    };
-  }
-
-  // cloned from ImmutableCollection
-  private static int expandedCapacity(int oldCapacity, int minCapacity) {
-    if (minCapacity < 0) {
-      throw new IllegalArgumentException("cannot store more than Integer.MAX_VALUE elements");
-    } else if (minCapacity <= oldCapacity) {
-      return oldCapacity;
-    }
-    // careful of overflow!
-    int newCapacity = oldCapacity + (oldCapacity >> 1) + 1;
-    if (newCapacity < minCapacity) {
-      newCapacity = Integer.highestOneBit(minCapacity - 1) << 1;
-    }
-    if (newCapacity < 0) {
-      newCapacity = Integer.MAX_VALUE;
-      // guaranteed to be >= newCapacity
-    }
-    return newCapacity;
   }
 }
