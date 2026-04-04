@@ -893,24 +893,29 @@ public abstract class CharMatcher implements Predicate<Character> {
 
   }
 
-  private String finishCollapseFrom(
-      CharSequence sequence,
-      int start,
-      int end,
-      CollapseState state) {
-    for (int i = start; i < end; i++) {
-      char c = sequence.charAt(i);
-      if (matches(c)) {
-        if (!state.inMatchingGroup) {
-          state.builder.append(state.replacement);
-          state.inMatchingGroup = true;
-        }
-      } else {
-        state.builder.append(c);
-        state.inMatchingGroup = false;
-      }
+  /** Traite un seul caractère dans l'état de collapse. */
+  private void processCharForCollapse(char c, CollapseState state) {
+    if (matches(c)) {
+      appendReplacementIfNeeded(state);
+    } else {
+      state.builder.append(c);
+      state.inMatchingGroup = false;
     }
-    return builder.toString();
+  }
+
+  /** Ajoute le caractère de remplacement si on entre dans un nouveau groupe. */
+  private void appendReplacementIfNeeded(CollapseState state) {
+    if (!state.inMatchingGroup) {
+      state.builder.append(state.replacement);
+      state.inMatchingGroup = true;
+    }
+  }
+
+  private String finishCollapseFrom(
+      CharSequence sequence, int start, int end, CollapseState state) {
+    for (int i = start; i < end; i++) {
+      processCharForCollapse(sequence.charAt(i), state);
+    }
     return state.builder.toString();
   }
 
