@@ -27,7 +27,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import com.google.common.annotations.GwtCompatible;
 import com.google.common.annotations.GwtIncompatible;
 import com.google.common.annotations.J2ktIncompatible;
-import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.j2objc.annotations.J2ObjCIncompatible;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -126,7 +125,9 @@ public final class Stopwatch {
    * @since 15.0
    */
   public static Stopwatch createStarted() {
-    return new Stopwatch().start();
+    Stopwatch stopwatch = new Stopwatch();
+    stopwatch.start();
+    return stopwatch;
   }
 
   /**
@@ -135,7 +136,9 @@ public final class Stopwatch {
    * @since 15.0
    */
   public static Stopwatch createStarted(Ticker ticker) {
-    return new Stopwatch(ticker).start();
+    Stopwatch stopwatch = new Stopwatch(ticker);
+    stopwatch.start();
+    return stopwatch;
   }
 
   Stopwatch() {
@@ -163,12 +166,10 @@ public final class Stopwatch {
    * @return this {@code Stopwatch} instance
    * @throws IllegalStateException if the stopwatch is already running.
    */
-  @CanIgnoreReturnValue
-  public Stopwatch start() {
+  public void start() {
     checkState(!isRunning, "This stopwatch is already running.");
     isRunning = true;
     startTick = ticker.read();
-    return this;
   }
 
   /**
@@ -181,13 +182,11 @@ public final class Stopwatch {
    * @return this {@code Stopwatch} instance
    * @throws IllegalStateException if the stopwatch is already stopped.
    */
-  @CanIgnoreReturnValue
-  public Stopwatch stop() {
+  public void stop() {
     long tick = ticker.read();
     checkState(isRunning, "This stopwatch is already stopped.");
     isRunning = false;
     elapsedNanos += tick - startTick;
-    return this;
   }
 
   /**
@@ -198,11 +197,9 @@ public final class Stopwatch {
    *
    * @return this {@code Stopwatch} instance
    */
-  @CanIgnoreReturnValue
-  public Stopwatch reset() {
+  public void reset() {
     elapsedNanos = 0;
     isRunning = false;
-    return this;
   }
 
   private long elapsedNanos() {

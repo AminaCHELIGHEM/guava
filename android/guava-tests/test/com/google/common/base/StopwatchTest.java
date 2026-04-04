@@ -59,7 +59,7 @@ public class StopwatchTest extends TestCase {
   }
 
   public void testStart() {
-    assertThat(stopwatch.start()).isSameInstanceAs(stopwatch);
+    stopwatch.start();
     assertTrue(stopwatch.isRunning());
   }
 
@@ -71,7 +71,7 @@ public class StopwatchTest extends TestCase {
 
   public void testStop() {
     stopwatch.start();
-    assertThat(stopwatch.stop()).isSameInstanceAs(stopwatch);
+    stopwatch.stop();
     assertFalse(stopwatch.isRunning());
   }
 
