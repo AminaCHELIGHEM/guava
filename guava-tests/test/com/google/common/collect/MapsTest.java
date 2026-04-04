@@ -986,6 +986,21 @@ public class MapsTest extends TestCase {
         () -> Maps.uniqueIndex(oneStringList, Functions.constant(null)));
   }
 
+  public void testUniqueIndexEmptyIterableReturnsEmptyMap() {
+    ImmutableMap<String, String> result = Maps.uniqueIndex(ImmutableList.of(), s -> s);
+    assertThat(result).isEmpty();
+  }
+
+  public void testUniqueIndexDuplicateKeysThrowsIllegalArgument() {
+    assertThrows(
+        IllegalArgumentException.class, () -> Maps.uniqueIndex(ImmutableList.of("a", "a"), s -> s));
+  }
+
+  public void testUniqueIndexSingleElementReturnsSingleEntryMap() {
+    ImmutableMap<String, String> result = Maps.uniqueIndex(ImmutableList.of("hello"), s -> s);
+    assertThat(result).containsExactly("hello", "hello");
+  }
+
   @J2ktIncompatible
   @GwtIncompatible // Maps.fromProperties
   public void testFromProperties() throws IOException {
