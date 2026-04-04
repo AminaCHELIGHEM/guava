@@ -879,21 +879,22 @@ public abstract class CharMatcher implements Predicate<Character> {
         ? collapseFrom(sequence, replacement)
         : finishCollapseFrom(
             sequence, first, last + 1, new CollapseState(replacement, new StringBuilder(last + 1 - first), false));
-    private static final class CollapseState {
-      final char replacement;
-      final StringBuilder builder;
-      boolean inMatchingGroup;
-
-      CollapseState(char replacement, StringBuilder builder, boolean inMatchingGroup) {
-        this.replacement = replacement;
-        this.builder = builder;
-        this.inMatchingGroup = inMatchingGroup;
-      }
-    }
-
   }
 
-  /** Traite un seul caractère dans l'état de collapse. */
+  /** Groups collapse state during character processing. */
+  private static final class CollapseState {
+    final char replacement;
+    final StringBuilder builder;
+    boolean inMatchingGroup;
+
+    CollapseState(char replacement, StringBuilder builder, boolean inMatchingGroup) {
+      this.replacement = replacement;
+      this.builder = builder;
+      this.inMatchingGroup = inMatchingGroup;
+    }
+  }
+
+  /** Processes a single character during collapse. */
   private void processCharForCollapse(char c, CollapseState state) {
     if (matches(c)) {
       appendReplacementIfNeeded(state);
@@ -903,7 +904,7 @@ public abstract class CharMatcher implements Predicate<Character> {
     }
   }
 
-  /** Ajoute le caractère de remplacement si on entre dans un nouveau groupe. */
+  /** Appends replacement character if entering a new matching group. */
   private void appendReplacementIfNeeded(CollapseState state) {
     if (!state.inMatchingGroup) {
       state.builder.append(state.replacement);
