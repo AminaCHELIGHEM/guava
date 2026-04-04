@@ -156,6 +156,9 @@ public final class Stopwatch {
 
   /**
    * Starts the stopwatch.
+    *
+    * <p>Returns {@code this} for fluent chaining only; the return value may be safely ignored when
+    * chaining is not needed.
    *
    * @return this {@code Stopwatch} instance
    * @throws IllegalStateException if the stopwatch is already running.
@@ -171,6 +174,9 @@ public final class Stopwatch {
   /**
    * Stops the stopwatch. Future reads will return the fixed duration that had elapsed up to this
    * point.
+    *
+    * <p>Returns {@code this} for fluent chaining only; the return value may be safely ignored when
+    * chaining is not needed.
    *
    * @return this {@code Stopwatch} instance
    * @throws IllegalStateException if the stopwatch is already stopped.
@@ -186,6 +192,9 @@ public final class Stopwatch {
 
   /**
    * Sets the elapsed time for this stopwatch to zero, and places it in a stopped state.
+    *
+    * <p>Returns {@code this} for fluent chaining only; the return value may be safely ignored when
+    * chaining is not needed.
    *
    * @return this {@code Stopwatch} instance
    */

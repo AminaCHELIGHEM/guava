@@ -374,6 +374,11 @@ public abstract class RateLimiter {
    * delay.
    *
    * <p>This method is equivalent to {@code tryAcquire(1)}.
+    *
+    * <p><b>Note on design:</b> This method both acquires a permit (command) and returns whether
+    * acquisition succeeded (query), which does not strictly follow the Command-Query Separation
+    * principle. A full separation would require breaking the public API. The return value should
+    * always be checked when the caller needs to know if the permit was granted.
    *
    * @return {@code true} if the permit was acquired, {@code false} otherwise
    * @since 14.0
