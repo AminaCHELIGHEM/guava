@@ -848,7 +848,7 @@ public abstract class CharMatcher implements Predicate<Character> {
           i++;
         } else {
           StringBuilder builder = new StringBuilder(len).append(sequence, 0, i).append(replacement);
-          return finishCollapseFrom(sequence, i + 1, len, replacement, builder, true);
+          return finishCollapseFrom(sequence, i + 1, len, new CollapseState(replacement, builder, true));
         }
       }
     }
@@ -878,29 +878,40 @@ public abstract class CharMatcher implements Predicate<Character> {
     return (first == 0 && last == len - 1)
         ? collapseFrom(sequence, replacement)
         : finishCollapseFrom(
-            sequence, first, last + 1, replacement, new StringBuilder(last + 1 - first), false);
+            sequence, first, last + 1, new CollapseState(replacement, new StringBuilder(last + 1 - first), false));
+    private static final class CollapseState {
+      final char replacement;
+      final StringBuilder builder;
+      boolean inMatchingGroup;
+
+      CollapseState(char replacement, StringBuilder builder, boolean inMatchingGroup) {
+        this.replacement = replacement;
+        this.builder = builder;
+        this.inMatchingGroup = inMatchingGroup;
+      }
+    }
+
   }
 
   private String finishCollapseFrom(
       CharSequence sequence,
       int start,
       int end,
-      char replacement,
-      StringBuilder builder,
-      boolean inMatchingGroup) {
+      CollapseState state) {
     for (int i = start; i < end; i++) {
       char c = sequence.charAt(i);
       if (matches(c)) {
-        if (!inMatchingGroup) {
-          builder.append(replacement);
-          inMatchingGroup = true;
+        if (!state.inMatchingGroup) {
+          state.builder.append(state.replacement);
+          state.inMatchingGroup = true;
         }
       } else {
-        builder.append(c);
-        inMatchingGroup = false;
+        state.builder.append(c);
+        state.inMatchingGroup = false;
       }
     }
     return builder.toString();
+    return state.builder.toString();
   }
 
   /**
