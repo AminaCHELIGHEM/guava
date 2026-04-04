@@ -349,6 +349,7 @@ public abstract class RateLimiter {
    * @throws IllegalArgumentException if the requested number of permits is negative or zero
    */
   @SuppressWarnings("GoodTime") // should accept a java.time.Duration
+  @CanIgnoreReturnValue
   public boolean tryAcquire(long timeout, TimeUnit unit) {
     return tryAcquire(1, timeout, unit);
   }
@@ -363,6 +364,7 @@ public abstract class RateLimiter {
    * @throws IllegalArgumentException if the requested number of permits is negative or zero
    * @since 14.0
    */
+  @CanIgnoreReturnValue
   public boolean tryAcquire(int permits) {
     return tryAcquire(permits, 0, MICROSECONDS);
   }
@@ -376,6 +378,7 @@ public abstract class RateLimiter {
    * @return {@code true} if the permit was acquired, {@code false} otherwise
    * @since 14.0
    */
+  @CanIgnoreReturnValue
   public boolean tryAcquire() {
     return tryAcquire(1, 0, MICROSECONDS);
   }
@@ -407,6 +410,7 @@ public abstract class RateLimiter {
    * @throws IllegalArgumentException if the requested number of permits is negative or zero
    */
   @SuppressWarnings("GoodTime") // should accept a java.time.Duration
+  @CanIgnoreReturnValue
   public boolean tryAcquire(int permits, long timeout, TimeUnit unit) {
     long timeoutMicros = max(unit.toMicros(timeout), 0);
     checkPermits(permits);
