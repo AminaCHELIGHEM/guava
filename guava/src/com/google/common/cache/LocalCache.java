@@ -2609,19 +2609,7 @@ final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<
 
     @GuardedBy("this")
     void expireEntries(long now) {
-      drainRecencyQueue();
-
-      ReferenceEntry<K, V> e;
-      while ((e = writeQueue.peek()) != null && map.isExpired(e, now)) {
-        if (!removeEntry(e, e.getHash(), RemovalCause.EXPIRED)) {
-          throw new AssertionError();
-        }
-      }
-      while ((e = accessQueue.peek()) != null && map.isExpired(e, now)) {
-        if (!removeEntry(e, e.getHash(), RemovalCause.EXPIRED)) {
-          throw new AssertionError();
-        }
-      }
+      LocalCacheEviction.expireEntries(this, now);
     }
 
     // eviction
@@ -2629,14 +2617,7 @@ final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<
     @GuardedBy("this")
     void enqueueNotification(
         @Nullable K key, int hash, @Nullable V value, int weight, RemovalCause cause) {
-      totalWeight -= weight;
-      if (cause.wasEvicted()) {
-        statsRecorder.recordEviction();
-      }
-      if (map.removalNotificationQueue != DISCARDING_QUEUE) {
-        RemovalNotification<K, V> notification = RemovalNotification.create(key, value, cause);
-        map.removalNotificationQueue.offer(notification);
-      }
+      LocalCacheEviction.enqueueNotification(this, key, hash, value, weight, cause);
     }
 
     /**
@@ -2647,38 +2628,13 @@ final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<
      */
     @GuardedBy("this")
     void evictEntries(ReferenceEntry<K, V> newest) {
-      if (!map.evictsBySize()) {
-        return;
-      }
-
-      drainRecencyQueue();
-
-      // If the newest entry by itself is too heavy for the segment, don't bother evicting
-      // anything else, just that
-      if (newest.getValueReference().getWeight() > maxSegmentWeight) {
-        if (!removeEntry(newest, newest.getHash(), RemovalCause.SIZE)) {
-          throw new AssertionError();
-        }
-      }
-
-      while (totalWeight > maxSegmentWeight) {
-        ReferenceEntry<K, V> e = getNextEvictable();
-        if (!removeEntry(e, e.getHash(), RemovalCause.SIZE)) {
-          throw new AssertionError();
-        }
-      }
+      LocalCacheEviction.evictEntries(this, newest);
     }
 
     // TODO(fry): instead implement this with an eviction head
     @GuardedBy("this")
     ReferenceEntry<K, V> getNextEvictable() {
-      for (ReferenceEntry<K, V> e : accessQueue) {
-        int weight = e.getValueReference().getWeight();
-        if (weight > 0) {
-          return e;
-        }
-      }
-      throw new AssertionError();
+      return LocalCacheEviction.getNextEvictable(this);
     }
 
     /** Returns first entry of bin for given hash. */
