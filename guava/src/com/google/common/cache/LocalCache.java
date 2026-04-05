@@ -1961,7 +1961,7 @@ final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<
     final Queue<ReferenceEntry<K, V>> accessQueue;
 
     /** Accumulates cache statistics. */
-    final StatsCounter statsCounter;
+    final LocalCacheStats statsRecorder;
 
     Segment(
         LocalCache<K, V> map,
@@ -1970,7 +1970,7 @@ final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<
         StatsCounter statsCounter) {
       this.map = map;
       this.maxSegmentWeight = maxSegmentWeight;
-      this.statsCounter = checkNotNull(statsCounter);
+      this.statsRecorder = new LocalCacheStats(checkNotNull(statsCounter));
       initTable(newEntryArray(initialCapacity));
 
       keyReferenceQueue = map.usesKeyReferences() ? new ReferenceQueue<>() : null;
@@ -2057,7 +2057,7 @@ final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<
             V value = getLiveValue(e, now);
             if (value != null) {
               recordRead(e, now);
-              statsCounter.recordHits(1);
+              statsRecorder.recordHit(1);
               return scheduleRefresh(e, key, hash, value, now, loader);
             }
             ValueReference<K, V> valueReference = e.getValueReference();
@@ -2141,7 +2141,7 @@ final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<
                     entryKey, hash, value, valueReference.getWeight(), RemovalCause.EXPIRED);
               } else {
                 recordLockedRead(e, now);
-                statsCounter.recordHits(1);
+                statsRecorder.recordHit(1);
                 // we were concurrent with loading; don't consider refresh
                 return value;
               }
@@ -2180,7 +2180,7 @@ final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<
             return loadSync(key, hash, loadingValueReference, loader);
           }
         } finally {
-          statsCounter.recordMisses(1);
+          statsRecorder.recordMiss(1);
         }
       } else {
         // The entry already exists. Wait for loading.
@@ -2206,7 +2206,7 @@ final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<
         recordRead(e, now);
         return value;
       } finally {
-        statsCounter.recordMisses(1);
+        statsRecorder.recordMiss(1);
       }
     }
 
@@ -2341,12 +2341,12 @@ final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<
         if (value == null) {
           throw new InvalidCacheLoadException("CacheLoader returned null for key " + key + ".");
         }
-        statsCounter.recordLoadSuccess(loadingValueReference.elapsedNanos());
+        statsRecorder.recordLoadSuccess(loadingValueReference.elapsedNanos());
         storeLoadedValue(key, hash, loadingValueReference, value);
         return value;
       } finally {
         if (value == null) {
-          statsCounter.recordLoadException(loadingValueReference.elapsedNanos());
+          statsRecorder.recordLoadException(loadingValueReference.elapsedNanos());
           removeLoadingValue(key, hash, loadingValueReference);
         }
       }
@@ -2631,7 +2631,7 @@ final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<
         @Nullable K key, int hash, @Nullable V value, int weight, RemovalCause cause) {
       totalWeight -= weight;
       if (cause.wasEvicted()) {
-        statsCounter.recordEviction();
+        statsRecorder.recordEviction();
       }
       if (map.removalNotificationQueue != DISCARDING_QUEUE) {
         RemovalNotification<K, V> notification = RemovalNotification.create(key, value, cause);
@@ -4907,7 +4907,7 @@ final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<
       SimpleStatsCounter aggregator = new SimpleStatsCounter();
       aggregator.incrementBy(localCache.globalStatsCounter);
       for (Segment<K, V> segment : localCache.segments) {
-        aggregator.incrementBy(segment.statsCounter);
+        aggregator.incrementBy(segment.statsRecorder);
       }
       return aggregator.snapshot();
     }
