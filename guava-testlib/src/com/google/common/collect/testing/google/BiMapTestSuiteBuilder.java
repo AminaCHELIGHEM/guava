@@ -84,40 +84,33 @@ public class BiMapTestSuiteBuilder<K, V>
     // TODO(cpovirk): consider using this approach (derived suites instead of extension) in
     // ListTestSuiteBuilder, etc.?
     derived.add(
-        MapTestSuiteBuilder.using(new MapGenerator<K, V>(parentBuilder.getSubjectGenerator()))
-            .withFeatures(parentBuilder.getFeatures())
-            .named(parentBuilder.getName() + " [Map]")
-            .suppressing(parentBuilder.getSuppressedTests())
-            .suppressing(SetCreationTester.class.getMethods())
-            // BiMap.entrySet() duplicate-handling behavior is too confusing for SetCreationTester
-            .withSetUp(parentBuilder.getSetUp())
-            .withTearDown(parentBuilder.getTearDown())
-            .createTestSuite());
+        MapTestSuiteBuilder.createDerivedSuite(
+            MapTestSuiteBuilder.using(new MapGenerator<K, V>(parentBuilder.getSubjectGenerator())),
+            parentBuilder,
+            parentBuilder.getName() + " [Map]",
+            parentBuilder.getFeatures(),
+            SetCreationTester.class.getMethods()));
+    // BiMap.entrySet() duplicate-handling behavior is too confusing for SetCreationTester
     /*
      * TODO(cpovirk): the Map tests duplicate most of this effort by using a
      * CollectionTestSuiteBuilder on values(). It would be nice to avoid that
      */
     derived.add(
-        SetTestSuiteBuilder.using(
-                new BiMapValueSetGenerator<K, V>(parentBuilder.getSubjectGenerator()))
-            .withFeatures(computeValuesSetFeatures(parentBuilder.getFeatures()))
-            .named(parentBuilder.getName() + " values [Set]")
-            .suppressing(parentBuilder.getSuppressedTests())
-            .suppressing(SetCreationTester.class.getMethods())
-            // BiMap.values() duplicate-handling behavior is too confusing for SetCreationTester
-            .withSetUp(parentBuilder.getSetUp())
-            .withTearDown(parentBuilder.getTearDown())
-            .createTestSuite());
+        MapTestSuiteBuilder.createDerivedSuite(
+            SetTestSuiteBuilder.using(new BiMapValueSetGenerator<K, V>(parentBuilder.getSubjectGenerator())),
+            parentBuilder,
+            parentBuilder.getName() + " values [Set]",
+            computeValuesSetFeatures(parentBuilder.getFeatures()),
+            SetCreationTester.class.getMethods()));
+    // BiMap.values() duplicate-handling behavior is too confusing for SetCreationTester
     if (!parentBuilder.getFeatures().contains(NoRecurse.INVERSE)) {
       derived.add(
-          BiMapTestSuiteBuilder.using(
-                  new InverseBiMapGenerator<K, V>(parentBuilder.getSubjectGenerator()))
-              .withFeatures(computeInverseFeatures(parentBuilder.getFeatures()))
-              .named(parentBuilder.getName() + " inverse")
-              .suppressing(parentBuilder.getSuppressedTests())
-              .withSetUp(parentBuilder.getSetUp())
-              .withTearDown(parentBuilder.getTearDown())
-              .createTestSuite());
+          MapTestSuiteBuilder.createDerivedSuite(
+              BiMapTestSuiteBuilder.using(
+                  new InverseBiMapGenerator<K, V>(parentBuilder.getSubjectGenerator())),
+              parentBuilder,
+              parentBuilder.getName() + " inverse",
+              computeInverseFeatures(parentBuilder.getFeatures())));
     }
 
     return derived;

@@ -53,6 +53,7 @@ import com.google.common.collect.testing.testers.MapSerializationTester;
 import com.google.common.collect.testing.testers.MapSizeTester;
 import com.google.common.collect.testing.testers.MapToStringTester;
 import com.google.common.testing.SerializableTester;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -119,46 +120,53 @@ public class MapTestSuiteBuilder<K, V>
 
     if (parentBuilder.getFeatures().contains(CollectionFeature.SERIALIZABLE)) {
       derivedSuites.add(
-          MapTestSuiteBuilder.using(
-                  new ReserializedMapGenerator<K, V>(parentBuilder.getSubjectGenerator()))
-              .withFeatures(computeReserializedMapFeatures(parentBuilder.getFeatures()))
-              .named(parentBuilder.getName() + " reserialized")
-              .suppressing(parentBuilder.getSuppressedTests())
-              .withSetUp(parentBuilder.getSetUp())
-              .withTearDown(parentBuilder.getTearDown())
-              .createTestSuite());
+          createDerivedSuite(
+              MapTestSuiteBuilder.using(
+                  new ReserializedMapGenerator<K, V>(parentBuilder.getSubjectGenerator())),
+              parentBuilder,
+              parentBuilder.getName() + " reserialized",
+              computeReserializedMapFeatures(parentBuilder.getFeatures())));
     }
 
     derivedSuites.add(
-        createDerivedEntrySetSuite(
-                new MapEntrySetGenerator<K, V>(parentBuilder.getSubjectGenerator()))
-            .withFeatures(computeEntrySetFeatures(parentBuilder.getFeatures()))
-            .named(parentBuilder.getName() + " entrySet")
-            .suppressing(parentBuilder.getSuppressedTests())
-            .withSetUp(parentBuilder.getSetUp())
-            .withTearDown(parentBuilder.getTearDown())
-            .createTestSuite());
+        createDerivedSuite(
+            createDerivedEntrySetSuite(new MapEntrySetGenerator<K, V>(parentBuilder.getSubjectGenerator())),
+            parentBuilder,
+            parentBuilder.getName() + " entrySet",
+            computeEntrySetFeatures(parentBuilder.getFeatures())));
 
     derivedSuites.add(
-        createDerivedKeySetSuite(keySetGenerator(parentBuilder.getSubjectGenerator()))
-            .withFeatures(computeKeySetFeatures(parentBuilder.getFeatures()))
-            .named(parentBuilder.getName() + " keys")
-            .suppressing(parentBuilder.getSuppressedTests())
-            .withSetUp(parentBuilder.getSetUp())
-            .withTearDown(parentBuilder.getTearDown())
-            .createTestSuite());
+        createDerivedSuite(
+            createDerivedKeySetSuite(keySetGenerator(parentBuilder.getSubjectGenerator())),
+            parentBuilder,
+            parentBuilder.getName() + " keys",
+            computeKeySetFeatures(parentBuilder.getFeatures())));
 
     derivedSuites.add(
-        createDerivedValueCollectionSuite(
-                new MapValueCollectionGenerator<K, V>(parentBuilder.getSubjectGenerator()))
-            .named(parentBuilder.getName() + " values")
-            .withFeatures(computeValuesCollectionFeatures(parentBuilder.getFeatures()))
-            .suppressing(parentBuilder.getSuppressedTests())
-            .withSetUp(parentBuilder.getSetUp())
-            .withTearDown(parentBuilder.getTearDown())
-            .createTestSuite());
+        createDerivedSuite(
+            createDerivedValueCollectionSuite(
+                new MapValueCollectionGenerator<K, V>(parentBuilder.getSubjectGenerator())),
+            parentBuilder,
+            parentBuilder.getName() + " values",
+            computeValuesCollectionFeatures(parentBuilder.getFeatures())));
 
     return derivedSuites;
+  }
+
+  public static <B extends FeatureSpecificTestSuiteBuilder<B, ?>> TestSuite createDerivedSuite(
+      B derivedBuilder,
+      FeatureSpecificTestSuiteBuilder<?, ?> parentBuilder,
+      String name,
+      Iterable<? extends Feature<?>> features,
+      Method... extraSuppressedTests) {
+    return derivedBuilder
+        .withFeatures(features)
+        .named(name)
+        .suppressing(parentBuilder.getSuppressedTests())
+        .suppressing(extraSuppressedTests)
+        .withSetUp(parentBuilder.getSetUp())
+        .withTearDown(parentBuilder.getTearDown())
+        .createTestSuite();
   }
 
   protected SetTestSuiteBuilder<Entry<K, V>> createDerivedEntrySetSuite(
