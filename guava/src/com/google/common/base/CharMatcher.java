@@ -25,6 +25,7 @@ import com.google.errorprone.annotations.InlineMe;
 import com.google.errorprone.annotations.InlineMeValidationDisabled;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.NoSuchElementException;
 
 /**
  * Determines a true or false value for any Java {@code char} value, just as {@link Predicate} does
@@ -587,7 +588,7 @@ public abstract class CharMatcher implements Predicate<Character> {
         return i;
       }
     }
-    return -1;
+    throw new NoSuchElementException("No matching character found in sequence: " + sequence);
   }
 
   /**
@@ -1074,6 +1075,9 @@ public abstract class CharMatcher implements Predicate<Character> {
 
     @Override
     public int lastIndexIn(CharSequence sequence) {
+      if (sequence.length() == 0) {
+        throw new NoSuchElementException("No matching character found in sequence: " + sequence);
+      }
       return sequence.length() - 1;
     }
 
@@ -1173,7 +1177,7 @@ public abstract class CharMatcher implements Predicate<Character> {
     @Override
     public int lastIndexIn(CharSequence sequence) {
       checkNotNull(sequence);
-      return -1;
+      throw new NoSuchElementException("No matching character found in sequence: " + sequence);
     }
 
     @Override

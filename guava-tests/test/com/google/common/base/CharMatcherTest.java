@@ -34,6 +34,7 @@ import com.google.common.testing.NullPointerTester;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashSet;
+import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Set;
 import junit.framework.AssertionFailedError;
@@ -192,7 +193,11 @@ public class CharMatcherTest extends TestCase {
       fail();
     } catch (IndexOutOfBoundsException expected) {
     }
-    assertEquals(-1, matcher.lastIndexIn(""));
+    try {
+      matcher.lastIndexIn("");
+      fail("Expected NoSuchElementException");
+    } catch (NoSuchElementException expected) {
+    }
     assertFalse(matcher.matchesAnyOf(""));
     assertTrue(matcher.matchesAllOf(""));
     assertTrue(matcher.matchesNoneOf(""));
@@ -282,7 +287,11 @@ public class CharMatcherTest extends TestCase {
       fail();
     } catch (IndexOutOfBoundsException expected) {
     }
-    assertEquals(-1, matcher.lastIndexIn(s));
+    try {
+      matcher.lastIndexIn(s);
+      fail("Expected NoSuchElementException");
+    } catch (NoSuchElementException expected) {
+    }
     assertFalse(matcher.matchesAnyOf(s));
     assertFalse(matcher.matchesAllOf(s));
     assertTrue(matcher.matchesNoneOf(s));
@@ -398,7 +407,11 @@ public class CharMatcherTest extends TestCase {
     assertEquals(-1, matcher.indexIn(s));
     assertEquals(-1, matcher.indexIn(s, 0));
     assertEquals(-1, matcher.indexIn(s, 1));
-    assertEquals(-1, matcher.lastIndexIn(s));
+    try {
+      matcher.lastIndexIn(s);
+      fail("Expected NoSuchElementException");
+    } catch (NoSuchElementException expected) {
+    }
     assertFalse(matcher.matchesAnyOf(s));
     assertFalse(matcher.matchesAllOf(s));
     assertTrue(matcher.matchesNoneOf(s));
